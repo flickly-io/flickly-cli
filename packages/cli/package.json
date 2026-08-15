@@ -1,0 +1,31 @@
+{
+  "name": "@flickly/cli",
+  "version": "0.1.0",
+  "description": "Command-line interface for Flickly — upload APKs, launch cloud Android devices, manage sessions. Built to be agent- and CI-friendly.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "flickly": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --target node18 --clean --shims",
+    "dev": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "commander": "^12.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsup": "^8.3.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

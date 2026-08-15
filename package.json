@@ -1,0 +1,17 @@
+{
+  "name": "flickly-cli-workspace",
+  "private": true,
+  "version": "0.0.0",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w @flickly/cli",
+    "typecheck": "npm run typecheck -w @flickly/cli",
+    "lint": "npm run lint -w @flickly/cli",
+    "dev": "npm run dev -w @flickly/cli"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
