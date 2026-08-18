@@ -66,8 +66,9 @@ This is an npm workspace so the pieces below can land without restructuring:
   drive the CLI directly. Not yet in a marketplace — install locally with
   `claude --plugin-dir ./plugins/claude-code`.
 - *(planned)* a Codex CLI plugin — same idea, for OpenAI's Codex CLI.
-- *(planned)* a reusable composite GitHub Action wrapping common CLI calls (e.g.
-  "upload this APK and launch a session as part of CI").
+- `action.yml` at the repo root — a reusable GitHub Action (see [ACTION.md](./ACTION.md)) that
+  uploads an APK and optionally launches a session as part of CI. Usable today as
+  `flickly-io/flickly-cli@v1`.
 
 ## License
 

@@ -1,0 +1,107 @@
+name: "Flickly"
+description: "Upload an APK and optionally launch a cloud Android session on Flickly"
+branding:
+  icon: "smartphone"
+  color: "purple"
+
+inputs:
+  api-key:
+    description: "Flickly API key (create one at https://flickly.io/app/settings/api-keys)"
+    required: true
+  api-url:
+    description: "Flickly API base URL"
+    required: false
+    default: "https://api.flickly.io"
+  apk-path:
+    description: "Path to the .apk file to upload"
+    required: true
+  launch-session:
+    description: "Launch a device session with the uploaded APK"
+    required: false
+    default: "false"
+  wait-for-ready:
+    description: "Poll until the launched session is ready (or failed) before finishing"
+    required: false
+    default: "true"
+  wait-timeout-seconds:
+    description: "Max seconds to wait for the session to become ready"
+    required: false
+    default: "120"
+  cli-version:
+    description: "flickly CLI version to install"
+    required: false
+    default: "latest"
+
+outputs:
+  app-id:
+    description: "The uploaded app's id"
+    value: ${{ steps.upload.outputs.app-id }}
+  session-id:
+    description: "The launched session's id (only if launch-session was true)"
+    value: ${{ steps.launch.outputs.session-id }}
+  session-state:
+    description: "Final observed session state, e.g. ready/failed (only if wait-for-ready was true)"
+    value: ${{ steps.wait.outputs.session-state }}
+  view-url:
+    description: "URL to view the running device, once ready (only if wait-for-ready was true)"
+    value: ${{ steps.wait.outputs.view-url }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install flickly CLI
+      shell: bash
+      run: npm install -g flickly@${{ inputs.cli-version }}
+
+    - name: Upload APK
+      id: upload
+      shell: bash
+      env:
+        FLICKLY_API_KEY: ${{ inputs.api-key }}
+        FLICKLY_API_URL: ${{ inputs.api-url }}
+      run: |
+        set -euo pipefail
+        flickly apps upload "${{ inputs.apk-path }}" --json | tee /tmp/flickly-upload.json
+        echo "app-id=$(node -e "console.log(require('/tmp/flickly-upload.json').id)")" >> "$GITHUB_OUTPUT"
+
+    - name: Launch session
+      id: launch
+      if: inputs.launch-session == 'true'
+      shell: bash
+      env:
+        FLICKLY_API_KEY: ${{ inputs.api-key }}
+        FLICKLY_API_URL: ${{ inputs.api-url }}
+      run: |
+        set -euo pipefail
+        flickly sessions launch --app "${{ steps.upload.outputs.app-id }}" --json | tee /tmp/flickly-launch.json
+        echo "session-id=$(node -e "console.log(require('/tmp/flickly-launch.json').id)")" >> "$GITHUB_OUTPUT"
+
+    - name: Wait for session to be ready
+      id: wait
+      if: inputs.launch-session == 'true' && inputs.wait-for-ready == 'true'
+      shell: bash
+      env:
+        FLICKLY_API_KEY: ${{ inputs.api-key }}
+        FLICKLY_API_URL: ${{ inputs.api-url }}
+      run: |
+        set -euo pipefail
+        deadline=$(( $(date +%s) + ${{ inputs.wait-timeout-seconds }} ))
+        while true; do
+          flickly sessions view "${{ steps.launch.outputs.session-id }}" --json > /tmp/flickly-view.json
+          state="$(node -e "console.log(require('/tmp/flickly-view.json').state)")"
+          echo "Session state: $state"
+          if [ "$state" = "ready" ] || [ "$state" = "failed" ]; then
+            echo "session-state=$state" >> "$GITHUB_OUTPUT"
+            echo "view-url=$(node -e "console.log(require('/tmp/flickly-view.json').viewUrl || '')")" >> "$GITHUB_OUTPUT"
+            if [ "$state" = "failed" ]; then
+              echo "::error::Flickly session failed to start"
+              exit 1
+            fi
+            break
+          fi
+          if [ "$(date +%s)" -ge "$deadline" ]; then
+            echo "::error::Timed out after ${{ inputs.wait-timeout-seconds }}s waiting for the session to become ready"
+            exit 1
+          fi
+          sleep 3
+        done
