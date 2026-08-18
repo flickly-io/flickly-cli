@@ -1,11 +1,23 @@
 {
-  "name": "@flickly/cli",
+  "name": "flickly",
   "version": "0.1.0",
   "description": "Command-line interface for Flickly — upload APKs, launch cloud Android devices, manage sessions. Built to be agent- and CI-friendly.",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flickly-io/flickly-cli.git"
+  },
+  "homepage": "https://github.com/flickly-io/flickly-cli#readme",
+  "keywords": [
+    "flickly",
+    "cli",
+    "android",
+    "cloud-device",
+    "streaming"
+  ],
   "bin": {
-    "flickly": "./dist/index.js"
+    "flickly": "dist/index.js"
   },
   "files": [
     "dist"

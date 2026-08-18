@@ -1,0 +1,49 @@
+name: Release
+
+# Tag a version and push it: git tag v0.1.1 && git push --tags
+# That's the entire release process — this builds, sanity-checks the tag
+# against package.json, publishes to npm, and cuts a GitHub Release.
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+
+      # The tag is the source of truth for what gets published — this just
+      # catches a forgotten `npm version` bump before it ships the wrong code
+      # under the wrong number.
+      - name: Verify tag matches package.json version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PKG_VERSION="$(node -p "require('./packages/cli/package.json').version")"
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "Tag $GITHUB_REF_NAME doesn't match packages/cli/package.json version ($PKG_VERSION)"
+            exit 1
+          fi
+
+      - name: Publish to npm
+        working-directory: packages/cli
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}
