@@ -1,6 +1,6 @@
 {
   "name": "flickly",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Command-line interface for Flickly — upload APKs, launch cloud Android devices, manage sessions. Built to be agent- and CI-friendly.",
   "license": "MIT",
   "type": "module",
