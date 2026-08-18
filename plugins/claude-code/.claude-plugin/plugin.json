@@ -1,0 +1,10 @@
+{
+  "name": "flickly",
+  "displayName": "Flickly",
+  "description": "Upload Android APKs and manage cloud-streamed device sessions on Flickly, right from Claude Code.",
+  "version": "0.1.0",
+  "author": { "name": "Flickly", "url": "https://flickly.io" },
+  "homepage": "https://flickly.io",
+  "repository": "https://github.com/flickly-io/flickly-cli",
+  "license": "MIT"
+}

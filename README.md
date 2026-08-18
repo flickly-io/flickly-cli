@@ -6,12 +6,18 @@ by coding agents, not just humans at a terminal.
 
 ## Install
 
-Not yet published. For now, run from source:
+```bash
+npm install -g flickly
+```
+
+Or run one-off without installing: `npx flickly <command>`.
+
+To run from source instead:
 
 ```bash
 npm install
-npm run build -w @flickly/cli
-npm link -w @flickly/cli   # exposes `flickly` globally
+npm run build -w flickly
+npm link -w flickly   # exposes `flickly` globally
 ```
 
 ## Authenticate
@@ -55,9 +61,10 @@ flickly sessions stop <sessionId>
 
 This is an npm workspace so the pieces below can land without restructuring:
 
-- `packages/cli` — the `flickly` binary (this is what exists today).
-- *(planned)* a Claude Code plugin — skills/commands that shell out to this CLI's
-  `--json` output.
+- `packages/cli` — the `flickly` binary, [published to npm](https://www.npmjs.com/package/flickly).
+- `plugins/claude-code` — a Claude Code plugin (see its own README) that teaches Claude to
+  drive the CLI directly. Not yet in a marketplace — install locally with
+  `claude --plugin-dir ./plugins/claude-code`.
 - *(planned)* a Codex CLI plugin — same idea, for OpenAI's Codex CLI.
 - *(planned)* a reusable composite GitHub Action wrapping common CLI calls (e.g.
   "upload this APK and launch a session as part of CI").
